@@ -576,53 +576,89 @@ function toggleSTT() {
   }
 }
 
-function startSTT() {
-  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-    alert('이 브라우저는 음성 인식을 지원하지 않아요.\n Chrome에서 열어주세요!');
-    return;
-  }
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.lang = 'ja-JP';
-  recognition.continuous = false;
-  recognition.interimResults = true;
+// startSTT(), stopSTT() 교체
+let mediaRecorder = null;
+let audioChunks = [];
 
-  recognition.onstart = () => {
-    isRecording = true;
+async function toggleSTT() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    // 녹음 중지 → Whisper로 전송
+    mediaRecorder.stop();
+  } else {
+    // 녹음 시작
+    await startRecording();
+  }
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+
+    // webm 지원 여부 확인 (iOS Safari는 mp4 사용)
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm')
+      ? 'audio/webm'
+      : 'audio/mp4';
+
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      // 마이크 스트림 종료
+      stream.getTracks().forEach(t => t.stop());
+
+      // UI: 처리 중 상태
+      document.getElementById('stt-icon').textContent = '⏳';
+      document.getElementById('stt-text').textContent = '인식 중...';
+      document.getElementById('stt-btn').disabled = true;
+
+      try {
+        const audioBlob = new Blob(audioChunks, { type: mimeType });
+
+        // Whisper API 호출 (api.js의 함수)
+        const transcript = await transcribeAudio(audioBlob);
+
+        if (transcript) {
+          document.getElementById('text-input').value = transcript;
+          sendMessage(); // 자동으로 전송
+        } else {
+          alert('음성을 인식하지 못했어요. 다시 시도해 주세요.');
+        }
+      } catch (err) {
+        console.error('STT 오류:', err);
+        alert('음성 인식 중 오류가 발생했어요: ' + err.message);
+      } finally {
+        // UI 복구
+        document.getElementById('stt-btn').disabled = false;
+        document.getElementById('stt-icon').textContent = '🎙️';
+        document.getElementById('stt-text').textContent = '일본어로 말하기';
+        document.getElementById('stt-btn').classList.remove('recording');
+      }
+    };
+
+    // 녹음 시작
+    mediaRecorder.start();
+
+    // UI: 녹음 중 상태
     document.getElementById('stt-btn').classList.add('recording');
     document.getElementById('stt-icon').textContent = '⏹️';
-    document.getElementById('stt-text').textContent = '듣는 중... (탭하여 중지)';
-  };
+    document.getElementById('stt-text').textContent = '녹음 중... 탭하여 중지';
 
-  recognition.onresult = (e) => {
-    let transcript = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      transcript += e.results[i][0].transcript;
+  } catch (err) {
+    if (err.name === 'NotAllowedError') {
+      alert('마이크 권한을 허용해 주세요.');
+    } else {
+      alert('마이크를 사용할 수 없어요: ' + err.message);
     }
-    document.getElementById('text-input').value = transcript;
-  };
-
-  recognition.onend = () => {
-    stopSTT();
-    const txt = document.getElementById('text-input').value.trim();
-    if (txt) sendMessage();
-  };
-
-  recognition.onerror = (e) => {
-    stopSTT();
-    console.error('STT error:', e.error);
-  };
-
-  recognition.start();
+  }
 }
 
-function stopSTT() {
-  isRecording = false;
-  if (recognition) recognition.stop();
-  document.getElementById('stt-btn').classList.remove('recording');
-  document.getElementById('stt-icon').textContent = '🎙️';
-  document.getElementById('stt-text').textContent = '일본어로 말하기';
-}
+// api.js에서 transcribeAudio 가져오기
+// index.html 상단 <script> 태그를 모듈로 바꾸거나
+// api.js를 직접 index.html에 인라인으로 포함해서 사용
 
 function scrollToBottom() {
   const msgs = document.getElementById('chat-messages');
@@ -633,6 +669,17 @@ function scrollToBottom() {
 document.getElementById('text-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') sendMessage();
 });
+</script>
+
+<script type="module">
+  import { sendChat, transcribeAudio, createSession, logUtterance, buildSystemPrompt } from '../api.js';
+
+  // 전역에서 쓸 수 있게 window에 등록
+  window.sendChat = sendChat;
+  window.transcribeAudio = transcribeAudio;
+  window.createSession = createSession;
+  window.logUtterance = logUtterance;
+  window.buildSystemPrompt = buildSystemPrompt;
 </script>
 </body>
 </html>
