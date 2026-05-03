@@ -4,6 +4,7 @@
 .env
 .env.local
 .env.production
+.env.example
  
 # node_modules (있을 경우)
 node_modules/

@@ -1,10 +1,10 @@
 // netlify/functions/chat.js
 
 exports.handler = async (event) => {
-  // CORS: 여러분 Netlify 도메인만 허용 (배포 후 실제 도메인으로 교체)
+  // CORS: Netlify 도메인만 허용 (배포 후 실제 도메인으로 교체)
   const allowedOrigins = [
-    'https://your-app.netlify.app',  // ← 배포 후 실제 주소로 교체
-    'http://localhost:8888',          // 로컬 개발용
+    'https://sdr-learnlanguage.netlify.app/',
+    'http://localhost:8888',          // for local testing
   ];
 
   const origin = event.headers.origin || '';
@@ -38,7 +38,7 @@ exports.handler = async (event) => {
 
     let reply = '';
 
-    // ── Gemini 2.5 Flash ──
+    // Gemini 2.5 Flash
     if (model === 'gemini') {
       const GEMINI_KEY = process.env.GEMINI_API_KEY;
       if (!GEMINI_KEY) throw new Error('GEMINI_API_KEY 환경변수가 설정되지 않았습니다');
@@ -76,7 +76,7 @@ exports.handler = async (event) => {
       reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 받지 못했습니다.';
     }
 
-    // ── GPT-4.1 Mini ──
+    // GPT-4.1 Mini
     else if (model === 'openai') {
       const OPENAI_KEY = process.env.OPENAI_API_KEY;
       if (!OPENAI_KEY) throw new Error('OPENAI_API_KEY 환경변수가 설정되지 않았습니다');

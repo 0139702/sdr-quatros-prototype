@@ -4,7 +4,7 @@
 
 exports.handler = async (event) => {
   const allowedOrigins = [
-    'https://your-app.netlify.app',
+    'https://sdr-learnlanguage.netlify.app/',
     'http://localhost:8888',
   ];
 

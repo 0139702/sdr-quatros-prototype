@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>경어 학습 프로토타입</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="phone-shell">
+  <!-- SCREEN 1: 학습 여정 -->
+  <div class="screen active" id="screen1">
+    <div class="nav-bar">
+      <button class="nav-close" onclick="alert('홈으로 이동')">✕</button>
+      <span style="font-size:20px;">✦</span>
+    </div>
+    <div class="content">
+      <h1 class="screen-title">학습 여정</h1>
+      <p class="screen-subtitle">매일 외국어 스피킹 한 번으로<br>쓰기, 읽기, 듣기 및 말하기까지 연습해요!</p>
+
+      <div class="learning-grid">
+        <div class="learning-card" data-type="writing" onclick="selectLearning(this)">
+          <span class="card-icon">✍️</span>
+          <span class="card-label">라이팅</span>
+        </div>
+        <div class="learning-card" data-type="listening" onclick="selectLearning(this)">
+          <span class="card-icon">🎧</span>
+          <span class="card-label">리스닝</span>
+        </div>
+        <div class="learning-card" data-type="speaking" onclick="selectLearning(this)">
+          <span class="card-icon">🎙️</span>
+          <span class="card-label">스피킹</span>
+        </div>
+        <div class="learning-card" data-type="reading" onclick="selectLearning(this)">
+          <span class="card-icon">📖</span>
+          <span class="card-label">리딩</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-next1" disabled onclick="goToScreen(2)">
+        다음으로 →
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: 학습 설정 -->
+  <div class="screen" id="screen2">
+    <div class="nav-bar">
+      <button class="nav-close" onclick="goToScreen(1)">✕</button>
+    </div>
+    <div style="padding: 0 24px 4px;">
+      <h1 class="screen-title">학습 설정</h1>
+      <p class="screen-subtitle">대화 연습을 위한 세부 컨텍스트를 조정하여<br>맞춤형 학습 환경을 구성하세요.</p>
+      <div class="progress-bar" style="margin: 12px 0 0;"><div class="progress-fill" style="width:33%"></div></div>
+    </div>
+
+    <div class="content" id="screen2-content" style="padding: 12px 24px 140px;">
+      <!-- Scenario -->
+      <div class="scenario-card">
+        <div class="scenario-icon">💼</div>
+        <div>
+          <div class="scenario-title">거래처 미팅</div>
+          <div class="scenario-sub">○○사 - 하시모토 늑구 씨</div>
+          <div class="scenario-desc">초면인 거래처 담당자와의 첫 비즈니스 미팅 상황입니다. 적절한 격식과 예의를 갖춘 커뮤니케이션이 요구됩니다.</div>
+        </div>
+      </div>
+
+      <!-- Sliders -->
+      <div class="section-card">
+        <div class="section-label">상황 변수 조정</div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">사회적 거리</span>
+            <span class="slider-value" id="val-distance">격식</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-distance" style="width:80%"></div>
+            <input type="range" min="0" max="100" value="80" id="slider-distance" oninput="updateSlider('distance', this.value)">
+          </div>
+          <div class="slider-labels"><span>가까움</span><span>멀어짐</span></div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">권력 격차</span>
+            <span class="slider-value" id="val-power">상대방이 높음</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-power" style="width:75%"></div>
+            <input type="range" min="0" max="100" value="75" id="slider-power" oninput="updateSlider('power', this.value)">
+          </div>
+          <div class="slider-labels"><span>내가 높음</span><span>동등함</span><span>상대가 높음</span></div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">공손성 수준</span>
+            <span class="slider-value" id="val-polite">매우 정중함</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill" id="fill-polite" style="width:90%"></div>
+            <input type="range" min="0" max="100" value="90" id="slider-polite" oninput="updateSlider('polite', this.value)">
+          </div>
+          <div class="slider-labels"><span>보통</span><span>정중함</span><span>겸양/존경</span></div>
+        </div>
+      </div>
+
+      <!-- Uchi-Soto -->
+      <div class="uchisoto-card">
+        <div class="section-label">우치-소토 위치 설정</div>
+        <div class="uchisoto-diagram">
+          <svg id="uchisoto-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+            <!-- Concentric circles -->
+            <circle cx="140" cy="140" r="125" fill="#F0EDE8" stroke="#E2DDD8" stroke-width="1"/>
+            <circle cx="140" cy="140" r="95" fill="#E8EEFF" stroke="#B8C8F8" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <circle cx="140" cy="140" r="68" fill="#dceeff" stroke="#93b8f0" stroke-width="1.5"/>
+            <circle cx="140" cy="140" r="44" fill="#c8dfff" stroke="#6098e8" stroke-width="2"/>
+            <circle cx="140" cy="140" r="22" fill="#2D5BE3" stroke="#1a3db8" stroke-width="1.5"/>
+
+            <!-- UCHI / SOTO labels -->
+            <text x="20" y="30" font-size="11" font-weight="700" fill="#2D5BE3" font-family="sans-serif">UCHI</text>
+            <text x="20" y="44" font-size="11" fill="#2D5BE3" font-family="sans-serif">うち</text>
+            <text x="220" y="30" font-size="11" font-weight="700" fill="#C8372D" font-family="sans-serif">SOTO</text>
+            <text x="222" y="44" font-size="11" fill="#C8372D" font-family="sans-serif">そと</text>
+
+            <!-- Arrow -->
+            <line x1="55" y1="37" x2="225" y2="37" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)" marker-start="url(#arrow-left)"/>
+            <defs>
+              <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#999"/>
+              </marker>
+              <marker id="arrow-left" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#999"/>
+              </marker>
+            </defs>
+
+            <!-- Ring labels -->
+            <text x="140" y="143" text-anchor="middle" font-size="10" font-weight="700" fill="white" font-family="sans-serif">나</text>
+            <text x="140" y="110" text-anchor="middle" font-size="9" fill="#3366cc" font-family="sans-serif">가족</text>
+            <text x="174" y="130" text-anchor="middle" font-size="9" fill="#3366cc" font-family="sans-serif">친구</text>
+            <text x="195" y="148" text-anchor="middle" font-size="8.5" fill="#557799" font-family="sans-serif">지인</text>
+            <text x="200" y="170" text-anchor="middle" font-size="8.5" fill="#557799" font-family="sans-serif">동료</text>
+            <text x="230" y="155" text-anchor="middle" font-size="8" fill="#C8372D" font-family="sans-serif">안 친한</text>
+            <text x="230" y="166" text-anchor="middle" font-size="8" fill="#C8372D" font-family="sans-serif">사람</text>
+
+            <!-- Draggable person -->
+            <g id="person-dot" class="person-dot" transform="translate(220, 155)">
+              <circle r="16" fill="#1A1614" stroke="white" stroke-width="2.5" filter="url(#dropshadow)"/>
+              <text text-anchor="middle" dy="4" font-size="9" fill="white" font-family="sans-serif" font-weight="600">하시모토</text>
+            </g>
+
+            <defs>
+              <filter id="dropshadow">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+              </filter>
+            </defs>
+          </svg>
+        </div>
+        <p class="uchisoto-hint">상대방의 이름을 자유롭게 움직이며<br>우치-소토 원 안의 적절한 위치에 옮겨 주세요.</p>
+      </div>
+
+    </div>
+
+    <button class="btn-complete" onclick="goToScreen(3)">설정 완료하기</button>
+  </div>
+
+  <!-- SCREEN 3: AI 페르소나 프리뷰 -->
+  <div class="screen" id="screen3">
+    <div class="nav-bar">
+      <button class="nav-close" onclick="goToScreen(2)">✕</button>
+    </div>
+    <div style="padding: 0 24px 4px;">
+      <h1 class="screen-title">학습 설정</h1>
+      <p class="screen-subtitle">대화 연습을 위한 세부 컨텍스트를 조정하여<br>맞춤형 학습 환경을 구성하세요.</p>
+      <div class="progress-bar" style="margin: 12px 0 0;"><div class="progress-fill" style="width:66%"></div></div>
+    </div>
+
+    <div class="content" style="padding: 12px 24px 140px;">
+      <!-- Persona preview -->
+      <div class="persona-preview">
+        <div class="persona-preview-header">
+          <span>☕</span>
+          <span>AI 페르소나 프리뷰</span>
+        </div>
+        <div class="persona-preview-title">정중하고 신중한 비즈니스 파트너</div>
+        <div class="persona-speech">
+          "안녕하세요. 저는 ○○ 회사의 부장인 하시모토 늑구라고 합니다. 이번에 한국 지부와 소통을 하게 되어서 정말 반갑고 기쁩니다. 앞으로도 우리 회사와 귀사와의 깊은 소통을 원합니다. 감사합니다."
+        </div>
+        <div class="persona-speech" style="margin-bottom:0;">
+          "그런 부분에 있어서는 어려울 것 같습니다."
+        </div>
+        <div class="persona-tags">
+          <div class="persona-tag"><div class="persona-tag-check">✓</div> 손양어 위주 사용</div>
+          <div class="persona-tag"><div class="persona-tag-check">✓</div> 보수적인 리액션</div>
+          <div class="persona-tag"><div class="persona-tag-check">✓</div> 완곡한 거절 표현 선호</div>
+        </div>
+      </div>
+
+      <!-- Context summary -->
+      <div class="context-summary">
+        <div class="context-row">
+          <span class="context-key">학습 유형</span>
+          <span class="context-val" id="summary-type">스피킹</span>
+        </div>
+        <div class="context-row">
+          <span class="context-key">사회적 거리</span>
+          <span class="context-val">격식 (소토)</span>
+        </div>
+        <div class="context-row">
+          <span class="context-key">권력 격차</span>
+          <span class="context-val">상대방이 높음</span>
+        </div>
+        <div class="context-row">
+          <span class="context-key">공손성</span>
+          <span class="context-val">매우 정중함</span>
+        </div>
+      </div>
+
+      <!-- Condition toggle -->
+      <div style="margin-top:16px; background: var(--surface); border-radius: var(--radius); padding:16px; border: 1.5px solid var(--border);">
+        <div style="font-size:13px; font-weight:700; color: var(--ink); margin-bottom:10px;">실험 조건 선택</div>
+        <div style="display:flex; gap:8px;">
+          <button onclick="setCondition('A')" id="btn-condA"
+            style="flex:1; padding:10px; border-radius:var(--radius-sm); border:1.5px solid var(--border); background:var(--surface2); font-size:13px; font-weight:700; font-family:'Noto Sans KR',sans-serif; cursor:pointer; transition:all 0.2s; color:var(--ink-muted);">
+            Condition A<br><span style="font-size:10px;font-weight:400;">바로 정답 제공</span>
+          </button>
+          <button onclick="setCondition('B')" id="btn-condB"
+            style="flex:1; padding:10px; border-radius:var(--radius-sm); border:1.5px solid var(--accent); background:var(--accent-soft); font-size:13px; font-weight:700; font-family:'Noto Sans KR',sans-serif; cursor:pointer; transition:all 0.2s; color:var(--accent);">
+            Condition B<br><span style="font-size:10px;font-weight:400;">단계적 질문 유도</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-start" onclick="goToScreen(4)">
+      대화 시작하기 →
+    </button>
+  </div>
+
+  <!-- SCREEN 4: 채팅 -->
+  <div class="screen" id="screen4">
+    <div class="chat-header">
+      <div class="chat-header-top">
+        <button class="nav-close" onclick="goToScreen(3)" style="margin-right:4px;">✕</button>
+        <div class="chat-avatar">橋</div>
+        <div>
+          <div class="chat-persona-name">하시모토 늑구 (橋本 陸)</div>
+          <div class="chat-persona-role">○○사 부장 · 거래처 미팅</div>
+        </div>
+        <span class="condition-badge" id="screen4-condition-badge" style="margin-left:auto;"></span>
+      </div>
+      <div class="chat-context-pills">
+        <span class="context-pill pill-red">격식</span>
+        <span class="context-pill pill-blue">소토 권역</span>
+        <span class="context-pill pill-gray">경어 필수</span>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <!-- AI opening message -->
+      <div class="msg-row">
+        <div class="msg-avatar">橋</div>
+        <div>
+          <div class="bubble ai">
+            <div class="bubble-jp">はじめまして。橋本陸と申します。<br>本日はよろしくお願いいたします。</div>
+            <div class="bubble-ko">처음 뵙겠습니다. 하시모토 늑구라고 합니다.<br>오늘 잘 부탁드립니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Condition B: step card will appear here -->
+      <div id="step-card-container"></div>
+    </div>
+
+    <div class="chat-input-area">
+      <button class="stt-btn" id="stt-btn" onclick="toggleSTT()">
+        <span id="stt-icon">🎙️</span>
+        <span id="stt-text">일본어로 말하기</span>
+      </button>
+      <div class="text-input-row">
+        <input class="text-input" id="text-input" placeholder="직접 입력 (일본어/한국어)" />
+        <button class="send-btn" onclick="sendMessage()">↑</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone-shell -->
+
+<script>
+// State
+let selectedType = null;
+let currentCondition = 'B';
+let isRecording = false;
+let recognition = null;
+
+// Screen navigation
+function goToScreen(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active', 'entering'));
+  const target = document.getElementById('screen' + n);
+  target.classList.add('active', 'entering');
+
+  if (n === 3) {
+    document.getElementById('summary-type').textContent = selectedType || '스피킹';
+  }
+  if (n === 4) {
+    updateConditionBadge();
+    initChatForCondition();
+  }
+}
+
+// Screen 1: Learning type selection
+function selectLearning(card) {
+  document.querySelectorAll('.learning-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedType = card.dataset.type;
+  document.getElementById('btn-next1').disabled = false;
+}
+
+// Screen 2: Sliders
+const sliderLabels = {
+  distance: [
+    [0,33,'가까움'], [34,66,'보통'], [67,100,'격식']
+  ],
+  power: [
+    [0,25,'내가 높음'], [26,50,'약간 높음'], [51,74,'동등함'], [75,100,'상대방이 높음']
+  ],
+  polite: [
+    [0,33,'보통'], [34,66,'정중함'], [67,89,'매우 정중함'], [90,100,'겸양/존경']
+  ]
+};
+
+function updateSlider(name, val) {
+  document.getElementById('fill-' + name).style.width = val + '%';
+  const labels = sliderLabels[name];
+  let label = '';
+  for (const [min, max, text] of labels) {
+    if (val >= min && val <= max) { label = text; break; }
+  }
+  document.getElementById('val-' + name).textContent = label;
+}
+
+// Uchi-Soto drag
+(function initUchiSoto() {
+  let dragging = false;
+  let startX, startY, dotX = 220, dotY = 155;
+  const svg = document.getElementById('uchisoto-svg');
+  const dot = document.getElementById('person-dot');
+
+  function getXY(e) {
+    const rect = svg.getBoundingClientRect();
+    const scaleX = 280 / rect.width;
+    const scaleY = 280 / rect.height;
+    const touch = e.touches ? e.touches[0] : e;
+    return {
+      x: (touch.clientX - rect.left) * scaleX,
+      y: (touch.clientY - rect.top) * scaleY
+    };
+  }
+
+  function onStart(e) {
+    e.preventDefault();
+    dragging = true;
+    const pos = getXY(e);
+    startX = pos.x - dotX;
+    startY = pos.y - dotY;
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    const pos = getXY(e);
+    dotX = Math.max(16, Math.min(264, pos.x - startX));
+    dotY = Math.max(16, Math.min(264, pos.y - startY));
+    dot.setAttribute('transform', `translate(${dotX}, ${dotY})`);
+  }
+  function onEnd() { dragging = false; }
+
+  dot.addEventListener('mousedown', onStart);
+  dot.addEventListener('touchstart', onStart, { passive: false });
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup', onEnd);
+  window.addEventListener('touchend', onEnd);
+})();
+
+// Condition toggle
+function setCondition(cond) {
+  currentCondition = cond;
+  const btnA = document.getElementById('btn-condA');
+  const btnB = document.getElementById('btn-condB');
+  if (cond === 'A') {
+    btnA.style.cssText = 'flex:1;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent2);background:var(--accent2-soft);font-size:13px;font-weight:700;font-family:\'Noto Sans KR\',sans-serif;cursor:pointer;color:var(--accent2);';
+    btnB.style.cssText = 'flex:1;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);font-size:13px;font-weight:700;font-family:\'Noto Sans KR\',sans-serif;cursor:pointer;color:var(--ink-muted);';
+  } else {
+    btnB.style.cssText = 'flex:1;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent-soft);font-size:13px;font-weight:700;font-family:\'Noto Sans KR\',sans-serif;cursor:pointer;color:var(--accent);';
+    btnA.style.cssText = 'flex:1;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);font-size:13px;font-weight:700;font-family:\'Noto Sans KR\',sans-serif;cursor:pointer;color:var(--ink-muted);';
+  }
+}
+
+function updateConditionBadge() {
+  const badge = document.getElementById('screen4-condition-badge');
+  if (currentCondition === 'A') {
+    badge.textContent = 'Condition A';
+    badge.className = 'condition-badge cond-a';
+  } else {
+    badge.textContent = 'Condition B';
+    badge.className = 'condition-badge cond-b';
+  }
+}
+
+// Chat
+function initChatForCondition() {
+  const container = document.getElementById('step-card-container');
+  container.innerHTML = '';
+  if (currentCondition === 'B') {
+    // Show step card for Condition B
+    setTimeout(() => showStepCard(), 800);
+  }
+}
+
+function showStepCard() {
+  const container = document.getElementById('step-card-container');
+  container.innerHTML = `
+    <div class="step-card" style="animation: fadeUp 0.3s ease forwards;">
+      <div class="step-card-title">💭 어떻게 대답할까요?</div>
+      <p style="font-size:12px;color:var(--ink-muted);margin-bottom:12px;line-height:1.6;">
+        이 상황에서 자기소개를 할 때 어떤 경어 레벨이 적절할까요?
+      </p>
+      <div class="step-options">
+        <button class="step-option" onclick="chooseOption(this, 'correct')">
+          <div>
+            <div style="font-size:13px;">申します (もうします)</div>
+            <div class="option-sub">겸양어 · 자신을 낮추는 표현</div>
+          </div>
+          <span class="option-check" style="font-size:16px;">○</span>
+        </button>
+        <button class="step-option" onclick="chooseOption(this, 'partial')">
+          <div>
+            <div style="font-size:13px;">です (です)</div>
+            <div class="option-sub">정중어 · 일반적인 정중함</div>
+          </div>
+          <span class="option-check" style="font-size:16px;">△</span>
+        </button>
+        <button class="step-option" onclick="chooseOption(this, 'wrong')">
+          <div>
+            <div style="font-size:13px;">だ (だ)</div>
+            <div class="option-sub">보통체 · 격식 없는 표현</div>
+          </div>
+          <span class="option-check" style="font-size:16px;">×</span>
+        </button>
+      </div>
+    </div>
+  `;
+  scrollToBottom();
+}
+
+function chooseOption(btn, level) {
+  // Disable all options
+  document.querySelectorAll('.step-option').forEach(o => o.disabled = true);
+  btn.classList.add('chosen');
+
+  // Show feedback
+  const feedbacks = {
+    correct: { badge: 'badge-correct', icon: '✓', text: '정답!', msg: '비즈니스 상황에서 처음 만나는 상대방에게는 겸양어(謙譲語)를 사용하는 것이 가장 적절합니다. 申します는 言う의 겸양 표현으로, 소토 관계에서 자신을 낮추는 핵심 표현이에요.' },
+    partial: { badge: 'badge-partial', icon: '△', text: '아쉬워요', msg: 'です는 정중하지만, 첫 비즈니스 미팅처럼 격식 있는 소토 상황에서는 겸양어를 쓰는 것이 더 자연스럽습니다.' },
+    wrong: { badge: 'badge-wrong', icon: '✗', text: '다시 생각해요', msg: 'だ는 보통체로, 친한 친구 사이(우치)에서 쓰는 표현입니다. 초면의 비즈니스 파트너에게는 부적절해요.' }
+  };
+  const fb = feedbacks[level];
+
+  const stepCard = document.querySelector('.step-card');
+  const feedbackEl = document.createElement('div');
+  feedbackEl.style.marginTop = '10px';
+  feedbackEl.innerHTML = `
+    <span class="feedback-badge ${fb.badge}">${fb.icon} ${fb.text}</span>
+    <p style="font-size:12px;color:var(--ink-muted);margin-top:8px;line-height:1.6;">${fb.msg}</p>
+    <button onclick="proceedToSpeaking()" style="margin-top:12px;width:100%;padding:10px;background:var(--ink);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">
+      이제 직접 말해보기 →
+    </button>
+  `;
+  stepCard.appendChild(feedbackEl);
+  scrollToBottom();
+}
+
+function proceedToSpeaking() {
+  const container = document.getElementById('step-card-container');
+  container.innerHTML = '';
+  addAIMessage('では、自己紹介をお願いできますか？', '자기소개를 부탁드릴 수 있을까요?');
+  scrollToBottom();
+}
+
+function addAIMessage(jp, ko) {
+  const messages = document.getElementById('chat-messages');
+  const row = document.createElement('div');
+  row.className = 'msg-row';
+  row.innerHTML = `
+    <div class="msg-avatar">橋</div>
+    <div>
+      <div class="bubble ai typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>
+  `;
+  messages.appendChild(row);
+  scrollToBottom();
+  setTimeout(() => {
+    row.querySelector('.bubble').innerHTML = `
+      <div class="bubble-jp">${jp}</div>
+      <div class="bubble-ko">${ko}</div>
+    `;
+  }, 1200);
+}
+
+function addUserMessage(text) {
+  const messages = document.getElementById('chat-messages');
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML = `
+    <div>
+      <div class="bubble user-msg">${text}</div>
+    </div>
+  `;
+  messages.appendChild(row);
+  scrollToBottom();
+}
+
+function sendMessage() {
+  const input = document.getElementById('text-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addUserMessage(text);
+
+  // Simulate response based on condition
+  setTimeout(() => {
+    if (currentCondition === 'A') {
+      // Condition A: direct feedback
+      addConditionAFeedback(text);
+    } else {
+      // Condition B: guided response
+      addAIMessage('ありがとうございます。それでは、本日の議題について話しましょうか。', '감사합니다. 그럼 오늘의 안건에 대해 이야기할까요?');
+    }
+  }, 500);
+}
+
+function addConditionAFeedback(userText) {
+  const messages = document.getElementById('chat-messages');
+  const row = document.createElement('div');
+  row.className = 'msg-row';
+  row.innerHTML = `
+    <div class="msg-avatar" style="background:#2D5BE3;">AI</div>
+    <div style="max-width:80%;">
+      <div class="feedback-a">
+        <div style="font-size:11px;color:var(--ink-muted);margin-bottom:6px;">정답 예시</div>
+        <div class="correct-ans">はじめまして。私は韓国支社の担当者でございます。どうぞよろしくお願いいたします。</div>
+        <div style="font-size:12px;color:var(--ink-muted);margin-top:8px;line-height:1.6;">
+          ございます (겸양어)와 いたします를 사용하여 소토 관계에 적절한 경어 레벨을 나타냈습니다.
+        </div>
+      </div>
+    </div>
+  `;
+  messages.appendChild(row);
+  scrollToBottom();
+}
+
+// STT
+function toggleSTT() {
+  if (isRecording) {
+    stopSTT();
+  } else {
+    startSTT();
+  }
+}
+
+function startSTT() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert('이 브라우저는 음성 인식을 지원하지 않아요.\n Chrome에서 열어주세요!');
+    return;
+  }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'ja-JP';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('stt-btn').classList.add('recording');
+    document.getElementById('stt-icon').textContent = '⏹️';
+    document.getElementById('stt-text').textContent = '듣는 중... (탭하여 중지)';
+  };
+
+  recognition.onresult = (e) => {
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      transcript += e.results[i][0].transcript;
+    }
+    document.getElementById('text-input').value = transcript;
+  };
+
+  recognition.onend = () => {
+    stopSTT();
+    const txt = document.getElementById('text-input').value.trim();
+    if (txt) sendMessage();
+  };
+
+  recognition.onerror = (e) => {
+    stopSTT();
+    console.error('STT error:', e.error);
+  };
+
+  recognition.start();
+}
+
+function stopSTT() {
+  isRecording = false;
+  if (recognition) recognition.stop();
+  document.getElementById('stt-btn').classList.remove('recording');
+  document.getElementById('stt-icon').textContent = '🎙️';
+  document.getElementById('stt-text').textContent = '일본어로 말하기';
+}
+
+function scrollToBottom() {
+  const msgs = document.getElementById('chat-messages');
+  setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 100);
+}
+
+// Enter key for text input
+document.getElementById('text-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+</script>
+</body>
+</html>
