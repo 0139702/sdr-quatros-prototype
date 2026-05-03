@@ -1,0 +1,13 @@
+# .gitignore
+ 
+# API 키 노출 X
+.env
+.env.local
+.env.production
+ 
+# node_modules (있을 경우)
+node_modules/
+ 
+# 시스템 파일
+.DS_Store
+Thumbs.db

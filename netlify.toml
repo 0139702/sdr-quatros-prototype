@@ -1,0 +1,18 @@
+# netlify.toml
+# Netlify 배포 설정
+ 
+[build]
+  publish = "."           # HTML 파일이 있는 루트 폴더
+  functions = "netlify/functions"  # 서버 함수 폴더
+ 
+# /api/* 경로를 Netlify Functions로 연결
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+ 
+# SPA처럼 404를 index.html로 fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
