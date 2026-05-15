@@ -245,6 +245,33 @@ body {
 }
 .btn-bottom-fixed:active { transform: scale(0.98); }
 
+#btn-start-chat {
+  background: #006A67;
+  font-size: 16px;
+  position: relative;
+  overflow: visible;
+  z-index: 10;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.08);
+  isolation: isolate;
+}
+#btn-start-chat::before {
+  content: '';
+  position: absolute;
+  width: 128px;
+  height: 128px;
+  /* background: radial-gradient(ellipse 50% 50% at 50% 50%, #64C3D6 0%, rgba(201, 212, 255, 0) 100%); */
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -40%); 
+  
+  z-index: -1; 
+  pointer-events: none;
+}
+#btn-start-chat::after {
+  display: none !important;
+}
+
 /* screen 1.5 - 어떤 대화를 할까요? 화면 */
 .day-badge {
   display: inline-flex;
