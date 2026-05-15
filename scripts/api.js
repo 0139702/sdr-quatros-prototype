@@ -1,16 +1,11 @@
 // api.js
 // 프론트엔드에서 Netlify Functions를 호출하는 모듈
-// API 키는 절대 여기에 없음 — 서버(chat.js, log.js)에만 있음
 
 // 설정
 // 개발 중엔 로컬 서버, 배포 후엔 자동으로 /api/* 경로 사용
-const API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:8888/api'
-  : '/api';
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8888/api' : '/api';
 
-// 현재 사용 모델: 'gemini' (개발) | 'openai' (최종 실험)
-// 화면 3에서 토글로 바꿀 수 있게 export
-export let currentModel = 'gemini';
+export let currentModel = 'openai';
 export function setModel(m) { currentModel = m; }
 
 // 1. AI 채팅
@@ -26,12 +21,6 @@ export async function sendChat(messages, systemPrompt) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages, systemPrompt, model: currentModel }),
   });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `서버 오류 (${res.status})`);
-  }
-
   const data = await res.json();
   return data.reply;
 }
@@ -47,10 +36,8 @@ export async function createSession(params) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'create_session', data: params }),
   });
-
-  if (!res.ok) throw new Error('세션 생성 실패');
   const result = await res.json();
-  return result.data?.[0]?.id; // Supabase가 반환한 session id
+  return result.data?.[0]?.id;
 }
 
 /**
@@ -84,48 +71,47 @@ export async function endSession(sessionId) {
   }
 }
 
+export async function generatePersona(params) {
+  const res = await fetch(`${API_BASE}/generate_persona`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  return await res.json();
+}
+
 // 3. 시스템 프롬프트 생성기
 /**
  * 슬라이더 값 + 우치소토 위치를 받아서 일본어 경어 시스템 프롬프트 생성
  */
-export function buildSystemPrompt({ condition, sliderDistance, sliderPower, sliderPolite, uchisotoZone }) {
-  const distanceLabel = sliderDistance > 66 ? '격식적(소토)' : sliderDistance > 33 ? '보통' : '친근(우치)';
-  const powerLabel    = sliderPower > 74 ? '상대방이 훨씬 높음' : sliderPower > 50 ? '상대방이 약간 높음' : '동등함';
-  const politeLabel   = sliderPolite > 89 ? '겸양어+존경어 필수' : sliderPolite > 66 ? '정중어 위주' : '보통체 허용';
-
-  const basePrompt = `
-あなたは橋本陸（はしもとりく）というビジネスパーソンです。
+export function buildSystemPrompt({ personaData, scenarioTag, distance, power, polite, uchisotoZone }) {
+  return `
+あなたは「${personaData.name}」(${personaData.role})というビジネスパーソンです。
 以下の設定で会話してください。
 
-【상황 설정】
-- 사회적 거리: ${distanceLabel} (우치소토: ${uchisotoZone})
-- 권력 관계: ${powerLabel}
-- 요구 경어 레벨: ${politeLabel}
+【상황 및 관계 설정】
+- 대화 목적: ${scenarioTag}
+- 사회적 거리: ${distance}/100 (높을수록 격식 있는 사이)
+- 권력 격차: ${power}/100 (50이 동등, 100에 가까울수록 당신이 더 높은 직급)
+- 공손성 요구 수준: ${polite}/100
+- 우치소토(ウチ・ソト) 관계: 상대방(사용자)은 당신에게 있어 「${uchisotoZone}」에 해당합니다.
+
+【성격 및 태도】
+- ${personaData.tags.join(', ')}
 
 【행동 규칙】
-1. 항상 일본어로 대답하세요
-2. 경어 레벨에 맞는 표현을 일관되게 사용하세요
-3. 소토 관계일 때는 손양어(謙譲語)와 존경어(尊敬語)를 적절히 사용하세요
-4. 거절 시 완곡한 표현을 선호하세요 (예: 〜は難しい状況でございます)
-5. 응답은 2-3문장으로 간결하게 하세요
-6. 자연스러운 비즈니스 일본어 대화를 유지하세요
-`.trim();
+1. 항상 일본어로 대답하세요.
+2. 앞서 정의된 권력 격차와 우치소토 관계에 맞는 경어 레벨을 일관되게 사용하세요.
+3. 출력하는 일본어 발화에 한자가 포함될 경우, 반드시 HTML <ruby> 태그와 <rt> 태그를 사용하여 한자 요소마다 요미가나(후리가나)를 달아주세요. (예: <ruby>宜<rt>よろ</rt></ruby>しく)
+4. 응답은 2-3문장으로 간결하게 하세요.
 
-  // Condition A: 직접 대화만
-  if (condition === 'A') {
-    return basePrompt;
-  }
-
-  // Condition B: 사용자 발화에 대해 경어 피드백 포함
-  return basePrompt + `
-
-【Condition B 추가 규칙】
+【학습자 피드백 규칙 (Condition B)】
 사용자가 일본어로 말하면:
-1. 먼저 자연스럽게 대화를 이어가세요
-2. 사용자의 경어 표현이 상황에 맞지 않으면 대화 끝에 한국어로 간단히 힌트를 주세요
+1. 먼저 자연스럽게 대화를 이어가세요.
+2. 사용자의 경어 표현이 설정된 상황(권력 격차, 우치소토 등)에 맞지 않으면 대화 끝에 한국어로 간단히 힌트를 주세요.
    형식: 💡 [힌트: 이 상황에서는 〜 대신 〜을 쓰면 더 자연스러워요]
-3. 경어가 적절하면 칭찬하지 말고 그냥 대화를 이어가세요 (학습자가 의식하지 않도록)
-`;
+3. 경어가 적절하면 칭찬하지 말고 자연스럽게 다음 대화로 넘어가세요.
+`.trim();
 }
 
 // 4. Whisper STT

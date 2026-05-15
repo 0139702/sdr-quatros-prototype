@@ -3,7 +3,7 @@
 exports.handler = async (event) => {
   // CORS: Netlify 도메인만 허용 (배포 후 실제 도메인으로 교체)
   const allowedOrigins = [
-    'https://sdr-learnlanguage.netlify.app/',
+    'https://sdr-learnlanguage.netlify.app',
     'http://localhost:8888',          // for local testing
   ];
 
@@ -26,7 +26,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { messages, systemPrompt, model = 'gemini' } = JSON.parse(event.body);
+    const { messages, systemPrompt, model = 'openai' } = JSON.parse(event.body);
 
     // 기본 입력 검증
     if (!messages || !Array.isArray(messages)) {
@@ -39,46 +39,46 @@ exports.handler = async (event) => {
     let reply = '';
 
     // Gemini 2.5 Flash
-    if (model === 'gemini') {
-      const GEMINI_KEY = process.env.GEMINI_API_KEY;
-      if (!GEMINI_KEY) throw new Error('GEMINI_API_KEY 환경변수가 설정되지 않았습니다');
+    // if (model === 'gemini') {
+    //   const GEMINI_KEY = process.env.GEMINI_API_KEY;
+    //   if (!GEMINI_KEY) throw new Error('GEMINI_API_KEY 환경변수가 설정되지 않았습니다');
 
-      // Gemini는 messages 형식이 다름: role이 'user'/'model'
-      const geminiMessages = messages.map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }],
-      }));
+    //   // Gemini는 messages 형식이 다름: role이 'user'/'model'
+    //   const geminiMessages = messages.map(m => ({
+    //     role: m.role === 'assistant' ? 'model' : 'user',
+    //     parts: [{ text: m.content }],
+    //   }));
 
-      const geminiBody = {
-        system_instruction: systemPrompt ? { parts: [{ text: systemPrompt }] } : undefined,
-        contents: geminiMessages,
-        generationConfig: {
-          maxOutputTokens: 500,
-          temperature: 0.7,
-        },
-      };
+    //   const geminiBody = {
+    //     system_instruction: systemPrompt ? { parts: [{ text: systemPrompt }] } : undefined,
+    //     contents: geminiMessages,
+    //     generationConfig: {
+    //       maxOutputTokens: 500,
+    //       temperature: 0.7,
+    //     },
+    //   };
 
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(geminiBody),
-        }
-      );
+    //   const res = await fetch(
+    //     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_KEY}`,
+    //     {
+    //       method: 'POST',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify(geminiBody),
+    //     }
+    //   );
 
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(`Gemini API 오류: ${res.status} — ${err}`);
-      }
+    //   if (!res.ok) {
+    //     const err = await res.text();
+    //     throw new Error(`Gemini API 오류: ${res.status} — ${err}`);
+    //   }
 
-      const data = await res.json();
-      reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 받지 못했습니다.';
-    }
+    //   const data = await res.json();
+    //   reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 받지 못했습니다.';
+    // }
 
     // GPT-4.1 Mini
-    else if (model === 'openai') {
-      const OPENAI_KEY = process.env.OPENAI_API_KEY;
+    if (model === 'openai') {
+      const OPENAI_KEY = process.env.OPENAI_STT_KEY;
       if (!OPENAI_KEY) throw new Error('OPENAI_API_KEY 환경변수가 설정되지 않았습니다');
 
       const openaiMessages = [

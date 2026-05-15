@@ -4,7 +4,7 @@
 
 exports.handler = async (event) => {
   const allowedOrigins = [
-    'https://sdr-learnlanguage.netlify.app/',
+    'https://sdr-learnlanguage.netlify.app',
     'http://localhost:8888',
   ];
 
@@ -24,23 +24,22 @@ exports.handler = async (event) => {
   try {
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY; // service_role key (서버 전용)
+    const payload = JSON.parse(event.body);
+    const { type, data } = payload;
+    let endpoint = '';
+    let insertData = {};
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
       throw new Error('Supabase 환경변수가 설정되지 않았습니다');
     }
-
-    const payload = JSON.parse(event.body);
-    const { type, data } = payload;
-
-    let endpoint = '';
-    let insertData = {};
 
     // 세션 생성
     if (type === 'create_session') {
       endpoint = '/rest/v1/sessions';
       insertData = {
         participant_id: data.participantId,         // 예: "P01"
-        condition: data.condition,                   // 'A' | 'B'
+        experiment_day: data.experimentDay,             // 예: "2024-06-01"
+        condition: 'B',                   // 'A' | 'B'
         learning_type: data.learningType,            // 'speaking' 등
         slider_distance: data.sliderDistance,
         slider_power: data.sliderPower,

@@ -4,7 +4,7 @@
 
 exports.handler = async (event) => {
   const allowedOrigins = [
-    'https://sdr-learnlanguage.netlify.app/', // ← 실제 Netlify URL로 교체
+    'https://sdr-learnlanguage.netlify.app',
     'http://localhost:8888',
   ];
   const origin = event.headers.origin || '';
@@ -20,7 +20,16 @@ exports.handler = async (event) => {
   }
 
   try {
-    const OPENAI_KEY = process.env.OPENAI_API_KEY;
+    const OPENAI_KEY = process.env.OPENAI_STT_KEY;
+
+    console.log('OPENAI_KEY debug:', {
+    exists: !!OPENAI_KEY,
+    prefix: OPENAI_KEY?.slice(0, 8),
+    suffix: OPENAI_KEY?.slice(-4),
+    length: OPENAI_KEY?.length,
+    hasSpace: /\s/.test(OPENAI_KEY || ''),
+    });
+    
     if (!OPENAI_KEY) throw new Error('OPENAI_API_KEY가 설정되지 않았습니다');
 
     // 브라우저에서 base64로 인코딩된 오디오 데이터를 받음
@@ -69,7 +78,22 @@ exports.handler = async (event) => {
     }
 
     const data = await res.json();
-    const transcript = data.text || '';
+    const transcript = (data.text || '').trim();
+
+    const hallucinatedPhrases = [
+        '視聴してくださって本当にありがとうございます。',
+        '視聴してくださって 本当にありがとうございます。',
+        'ご視聴ありがとうございました。',
+        'ありがとうございました。',
+    ];
+
+    if (!transcript || hallucinatedPhrases.includes(transcript)) {
+        return {
+            statusCode: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transcript: '' }),
+        }
+    }
 
     return {
       statusCode: 200,
