@@ -3,7 +3,9 @@
 
 // 설정
 // 개발 중엔 로컬 서버, 배포 후엔 자동으로 /api/* 경로 사용
-const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8888/api' : '/api';
+const API_BASE = window.location.hostname === 'localhost' 
+  ? 'http://localhost:8888/.netlify/functions' 
+  : '/.netlify/functions';
 
 export let currentModel = 'openai';
 export function setModel(m) { currentModel = m; }
