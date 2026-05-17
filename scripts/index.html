@@ -177,21 +177,21 @@
             </filter>
           </defs>
           
-          <circle cx="84" cy="125" r="148.5" fill="#E7EBF9" stroke="#1B264F" stroke-width="1" stroke-dasharray="5 5"/>
-          <circle cx="84" cy="125" r="105" fill="#BCC6EC" stroke="#1B264F" stroke-width="1"/>
-          <circle cx="84" cy="125" r="62.5" fill="#98A7E2" stroke="#1B264F" stroke-width="1"/>
-          <circle cx="84" cy="125" r="27.2" fill="#1B264F" stroke="#006A67" stroke-width="2"/> 
+          <circle cx="70.18" cy="124.7" r="148.5" fill="#E7EBF9" stroke="#1B264F" stroke-width="1" stroke-dasharray="5 5"/>
+          <circle cx="74.94" cy="124.9" r="105.1" fill="#BCC6EC" stroke="#1B264F" stroke-width="1"/>
+          <circle cx="74.94" cy="124.9" r="62.8" fill="#98A7E2" stroke="#1B264F" stroke-width="1"/>
+          <circle cx="77" cy="124.7" r="27.2" fill="#1B264F" stroke="#006A67" stroke-width="2"/> 
 
           <g font-family="Pretendard, sans-serif" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="middle">
-            <text x="84.5" y="126" fill="white">나</text>
-            <text x="128.5" y="127" fill="#333333">가족</text>
-            <text x="167.5" y="127" fill="#333333">친구</text>
-            <text x="209.5" y="106" fill="#333333">지인</text>
-            <text x="209.5" y="142" fill="#333333">동료</text>
-            <text x="292" y="125" fill="#333333">안 친한 사람</text>
+            <text x="78" y="124.7" fill="white">나</text>
+            <text x="120" y="128" fill="#333333">가족</text>
+            <text x="160" y="128" fill="#333333">친구</text>
+            <text x="200" y="106" fill="#333333">지인</text>
+            <text x="200" y="142" fill="#333333">동료</text>
+            <text x="285" y="125" fill="#333333">안 친한 사람</text>
           </g>
 
-          <g id="person-dot" transform="translate(230, 178)" style="cursor: grab;">
+          <g id="person-dot" transform="translate(210, 125)" style="cursor: grab;">
             <circle r="18" fill="#1A1614" stroke="white" stroke-width="2" filter="url(#dot-shadow)"/>
             <text y="-2" fill="white" font-family="Pretendard, sans-serif" font-size="11" font-weight="700" text-anchor="middle" id="dot-name-line1">하시</text>
             <text y="10" fill="white" font-family="Pretendard, sans-serif" font-size="11" font-weight="700" text-anchor="middle" id="dot-name-line2">모토</text>
@@ -291,17 +291,20 @@
     </button>
   </div>
 
-  <div class="screen" id="screen4" style="background:#F8F9FA;">
+  <div class="screen" id="screen4" style="background:#F8F9FA; display: none;">
     <div class="top-bar">
-      <button class="nav-close" onclick="closeChatSession(3)" style="margin:0;">
+      <button class="nav-close" onclick="closeChatSession()" style="margin:0;">
         <img src="./components/xBtn.svg" alt="close">
       </button>
-      <span style="font-weight:700; color:var(--ink);">비즈니스 경어</span>
-    <div class="chat-avatar" style="width:30px; height:30px;">👨‍💼</div>
-  </div>
+      <span style="font-weight:700; color:var(--ink); font-family:'Pretendard', sans-serif;">비즈니스 경어</span>
     
-    <div class="chat-messages" id="chat-messages" style="padding-bottom:140px;">
+      <div class="chat-avatar" style="width:30px; height:30px; border-radius:50%; overflow:hidden;">
+        <img src="./components/screen3/humanImg.svg" alt="profile" style="width:50%; height:50%; object-fit:cover;">
       </div>
+    </div>
+    
+    <div class="chat-messages" id="chat-messages">
+    </div>
 
     <div class="chat-input-area" style="bottom: 0;">
       <div class="text-input-row" style="display:flex; gap:8px; margin-bottom:12px;">
@@ -319,6 +322,11 @@
 
 <script>
 // State
+let globalParticipantId = 'P00'; // Screen 0에서 받을 ID
+let globalLearningType = '';     // Screen 1 (speaking, writing 등)
+let globalScenario = '';         // Screen 1.5 (보고하기, 사과하기 등)
+let globalPartnerName = '타나카 부장'; // Screen 3 (입력값)
+
 let selectedType = null;
 let currentCondition = 'B'; // Condition B 고정
 let conversationHistory = [];  
@@ -364,23 +372,20 @@ function goToScreen(n) {
   const target = document.getElementById('screen' + n);
   if (target) target.classList.add('active', 'entering');
 
-  // Screen 1.5 진입 시: 로컬 스토리지에서 일차 가져와서 뱃지 텍스트 변경
   if (n === '1_5') {
     const day = localStorage.getItem('experimentDay') || '1';
     const badge = document.getElementById('day-badge');
     if (badge) badge.textContent = `학습한 지 ${day}일차`;
   }
 
-  // Screen 2 진입 시: 입력한 시나리오와 파트너 이름을 카드와 도트에 연동
   if (n === 2) {
-    document.getElementById('display-scenario-title').textContent = selectedTag;
+    document.getElementById('display-scenario-title').textContent = globalScenario || selectedTag;
 
     const inputEl = document.getElementById('partner-input');
     const partnerName = (inputEl && inputEl.value.trim() !== '') ? inputEl.value.trim() : '타나카 부장';
     document.getElementById('display-partner-name').textContent = partnerName;
 
-    // 우치-소토 도트 이름을 2줄로 나누기 (첫 어절 기준, 최대 4글자)
-    const nameWord = partnerName.split(' ')[0]; // "야마다 과장" -> "야마다"만 추출
+    const nameWord = partnerName.split(' ')[0]; 
     const line1 = nameWord.substring(0, 2) || '상대';
     const line2 = nameWord.substring(2, 4) || '';
     
@@ -393,14 +398,40 @@ function goToScreen(n) {
   }
 }
 
-async function closeChatSession(targetScreen = 3) {
+// Screen 0: '다음' 버튼 누를 때
+function goToScreen1() {
+  const pIdInput = document.getElementById('input-pid'); // Screen 0의 input 태그 ID (실제 ID에 맞게 수정)
+  if (pIdInput) {
+    globalParticipantId = pIdInput.value.trim() || 'P_Unknown';
+  }
+  goToScreen(1);
+}
+
+// Screen 1: 말하기/쓰기 선택할 때 (클릭 이벤트)
+function selectLearningType(type) {
+  globalLearningType = type; // 예: 'speaking'
+  goToScreen('1_5');
+}
+
+// Screen 1.5: 보고하기/사과하기 선택할 때
+function selectScenario(scenario) {
+  globalScenario = scenario; // 예: '보고하기'
+  goToScreen(2);
+}
+
+async function closeChatSession(targetScreen = 0) {
   if (currentSessionId) {
     try {
       await window.endSession(currentSessionId);
+    } catch (e) {
+      console.warn('세션 종료 로깅 실패:', e);
+    } finally {
       currentSessionId = null;
-    } catch (e) {}
+      goToScreen(targetScreen);
+    }
+  } else {
+    goToScreen(targetScreen);
   }
-  goToScreen(targetScreen);
 }
 
 window.addEventListener('pagehide', () => {
@@ -437,7 +468,7 @@ function updateSlider(name, val) {
 // Uchi-Soto drag (피그마 좌표계 반영)
 (function initUchiSoto() {
   let dragging = false;
-  let startX, startY, dotX = 230, dotY = 178;
+  let startX, startY, dotX = 210, dotY = 125;
   const svg = document.getElementById('uchisoto-svg');
   const dot = document.getElementById('person-dot');
 
@@ -507,16 +538,18 @@ async function generateAndGoToScreen3() {
 
   try {
     const dotPos = getDotPosition();
-    const distFromCenter = Math.sqrt(Math.pow(dotPos.x - 84, 2) + Math.pow(dotPos.y - 125, 2));
+    const distFromCenter = Math.sqrt(Math.pow(dotPos.x - 85, 2) + Math.pow(dotPos.y - 125, 2));
+
     let uchisotoZone = '소토(안 친한 사람)'; 
-    if (distFromCenter < 62.5) uchisotoZone = '우치(가족)';
+    if (distFromCenter < 28) uchisotoZone = '우치(나)';
+    else if (distFromCenter < 63) uchisotoZone = '우치(가족)';
     else if (distFromCenter < 105) uchisotoZone = '우치(친구)';
-    else if (distFromCenter < 148.5) uchisotoZone = '소토(지인/동료)';
+    else if (distFromCenter < 149) uchisotoZone = '소토(지인/동료)';
 
     const inputEl = document.getElementById('partner-input');
     const partnerName = (inputEl && inputEl.value.trim() !== '') ? inputEl.value.trim() : '타나카 부장';
-    const combinedScenarioTag = `${selectedTag} (상대방: ${partnerName})`;
-
+    const combinedScenarioTag = `${globalScenario} (상대방: ${partnerName})`;
+    
     // API 호출
     personaData = await window.generatePersona({
       scenarioTag: combinedScenarioTag,
@@ -579,9 +612,14 @@ async function initChatForCondition() {
 
   try {
     currentSessionId = await window.createSession({
-      participantId: localStorage.getItem('participantId'),
-      experimentDay: parseInt(localStorage.getItem('experimentDay')),
-      learningType: selectedTag,
+      // 👇 새롭게 수집한 전역 변수들로 꽉 채워줍니다 👇
+      participantId: globalParticipantId,                          // Screen 0: 사용자 ID (P01 등)
+      experimentDay: parseInt(localStorage.getItem('experimentDay') || '1'), // 일차 정보 유지
+      learningType: globalLearningType,                            // Screen 1: 말하기/쓰기 등
+      scenarioType: globalScenario,                                // Screen 1.5: 보고하기, 사과하기 등
+      partnerName: globalPartnerName,                              // Screen 3: 상대방 이름
+      
+      // 👇 아래 슬라이더 및 동심원 데이터는 기존 그대로 유지 👇
       sliderDistance: parseInt(document.getElementById('slider-distance').value),
       sliderPower: parseInt(document.getElementById('slider-power').value),
       sliderPolite: parseInt(document.getElementById('slider-polite').value),
@@ -598,7 +636,6 @@ async function initChatForCondition() {
     setTimeout(() => showStepCard(), 800);
   }
 }
-
 function showStepCard() {
   const container = document.getElementById('chat-messages');
   const stepDiv = document.createElement('div');
@@ -612,22 +649,22 @@ function showStepCard() {
       <div class="step-options">
         <button class="step-option" onclick="chooseOption(this, 'correct')">
           <div>
-            <div style="font-size:13px;">申します (もうします)</div>
-            <div class="option-sub">겸양어 · 자신을 낮추는 표현</div>
+            <div style="font-size:13px; font-weight:600;">申します (もうします)</div>
+            <div class="option-sub" style="font-size:11px; margin-top:4px;">겸양어 · 자신을 낮추는 표현</div>
           </div>
           <span class="option-check" style="font-size:16px;">○</span>
         </button>
         <button class="step-option" onclick="chooseOption(this, 'partial')">
           <div>
-            <div style="font-size:13px;">です (です)</div>
-            <div class="option-sub">정중어 · 일반적인 정중함</div>
+            <div style="font-size:13px; font-weight:600;">です (です)</div>
+            <div class="option-sub" style="font-size:11px; margin-top:4px;">정중어 · 일반적인 정중함</div>
           </div>
           <span class="option-check" style="font-size:16px;">△</span>
         </button>
         <button class="step-option" onclick="chooseOption(this, 'wrong')">
           <div>
-            <div style="font-size:13px;">だ (だ)</div>
-            <div class="option-sub">보통체 · 격식 없는 표현</div>
+            <div style="font-size:13px; font-weight:600;">だ (だ)</div>
+            <div class="option-sub" style="font-size:11px; margin-top:4px;">보통체 · 격식 없는 표현</div>
           </div>
           <span class="option-check" style="font-size:16px;">×</span>
         </button>
@@ -639,8 +676,18 @@ function showStepCard() {
 }
 
 function chooseOption(btn, level) {
-  document.querySelectorAll('.step-option').forEach(o => o.disabled = true);
+  // 모든 옵션 버튼 비활성화 및 디자인 흐림 처리
+  document.querySelectorAll('.step-option').forEach(o => {
+    o.disabled = true;
+    o.style.opacity = '0.5';
+  });
+  
   btn.classList.add('chosen');
+  btn.style.opacity = '1';
+
+  // 선택한 버튼 내부에만 O, △, X 아이콘 강제 오픈
+  const checkEl = btn.querySelector('.option-check');
+  if (checkEl) checkEl.style.display = 'inline-block';
 
   const feedbacks = {
     correct: { badge: 'badge-correct', icon: '✓', text: '정답!', msg: '비즈니스 상황에서 처음 만나는 상대방에게는 겸양어(謙譲語)를 사용하는 것이 가장 적절합니다. 申します는 言う의 겸양 표현으로, 소토 관계에서 자신을 낮추는 핵심 표현이에요.' },
@@ -649,17 +696,21 @@ function chooseOption(btn, level) {
   };
   const fb = feedbacks[level];
 
+  // 구조에 맞게 단단하게 수정된 노드 삽입 로직
   const stepCard = document.querySelector('.step-card');
-  const feedbackEl = document.createElement('div');
-  feedbackEl.style.marginTop = '10px';
-  feedbackEl.innerHTML = `
-    <span class="feedback-badge ${fb.badge}">${fb.icon} ${fb.text}</span>
-    <p style="font-size:12px;color:var(--ink-muted);margin-top:8px;line-height:1.6;">${fb.msg}</p>
-    <button onclick="proceedToSpeaking(this)" style="margin-top:12px;width:100%;padding:10px;background:var(--ink);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">
-      이제 직접 말해보기 →
-    </button>
-  `;
-  stepCard.appendChild(feedbackEl);
+  if (stepCard) {
+    const feedbackEl = document.createElement('div');
+    feedbackEl.style.marginTop = '16px';
+    feedbackEl.style.animation = 'fadeUp 0.3s ease forwards';
+    feedbackEl.innerHTML = `
+      <span class="feedback-badge ${fb.badge}">${fb.icon} ${fb.text}</span>
+      <p style="font-size:12px;color:var(--ink-body);margin-top:8px;line-height:1.6;font-family:'Pretendard',sans-serif;font-weight:500;">${fb.msg}</p>
+      <button onclick="proceedToSpeaking(this)" style="margin-top:12px;width:100%;padding:14px;background:#006A67;color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:'Pretendard',sans-serif;cursor:pointer;">
+        이제 직접 말해보기 →
+      </button>
+    `;
+    stepCard.appendChild(feedbackEl);
+  }
   scrollToBottom();
 }
 
@@ -671,15 +722,21 @@ function proceedToSpeaking(btn) {
 
 function addAIMessageFull(jpText, hint, isError = false) {
   const messages = document.getElementById('chat-messages');
+  if(!messages) return;
+  
   const row = document.createElement('div');
   row.className = 'msg-row';
-  const hintHtml = hint ? `
-    <div style="margin-top:8px;padding:8px 10px;background:#FFFBEA;border-radius:8px;border-left:3px solid #F0C040;font-size:12px;color:#7A6000;line-height:1.5;">
+  
+  const hintHtml = (hint && isError) ? `
+    <div class="feedback-box">
       💡 ${hint}
     </div>` : '';
 
+  // 상단바 프로필과 100% 매칭되는 깔끔한 원형 프로필 세팅
   row.innerHTML = `
-    <div class="msg-avatar" ${isError ? 'style="background:#999;"' : ''}>橋</div>
+    <div class="msg-avatar">
+      <img src="./components/screen3/humanImg.svg" alt="profile" style="width:100%; height:100%; object-fit:cover; background:#1B264F; padding:4px;">
+    </div>
     <div>
       <div class="bubble ai">
         <div class="bubble-jp" style="${isError ? 'color:var(--ink-muted);' : ''}">${jpText}</div>
@@ -693,9 +750,16 @@ function addAIMessageFull(jpText, hint, isError = false) {
 
 function addUserMessage(text) {
   const messages = document.getElementById('chat-messages');
+  if(!messages) return;
+  
   const row = document.createElement('div');
-  row.className = 'msg-row user';
-  row.innerHTML = `<div><div class="bubble user-msg">${text}</div></div>`;
+  row.className = 'msg-row user'; // 우측 정렬 클래스 결합
+  
+  row.innerHTML = `
+    <div>
+      <div class="bubble user-msg">${text}</div>
+    </div>
+  `;
   messages.appendChild(row);
   scrollToBottom();
 }
@@ -705,7 +769,9 @@ function addTypingIndicator() {
   const row = document.createElement('div');
   row.className = 'msg-row';
   row.innerHTML = `
-    <div class="msg-avatar">橋</div>
+    <div class="msg-avatar"><div class="msg-avatar">
+      <img src="./components/screen3/humanImg.svg" alt="profile" style="width:100%; height:100%; object-fit:cover; background:#1B264F; padding:4px;">
+    </div></div>
     <div>
       <div class="bubble ai" style="padding:14px 16px;">
         <div style="display:flex;gap:4px;align-items:center;">
@@ -735,11 +801,13 @@ async function sendMessage(inputMethod = 'text') {
   const combinedScenarioTag = `${selectedTag} (상대방: ${partnerName})`;
 
   const dotPos = getDotPosition();
-  const distFromCenter = Math.sqrt(Math.pow(dotPos.x - 84, 2) + Math.pow(dotPos.y - 125, 2));
+  const distFromCenter = Math.sqrt(Math.pow(dotPos.x - 85, 2) + Math.pow(dotPos.y - 125, 2));
+
   let uchisotoZone = '소토(안 친한 사람)'; 
-  if (distFromCenter < 62.5) uchisotoZone = '우치(가족)';
+  if (distFromCenter < 28) uchisotoZone = '우치(나)';
+  else if (distFromCenter < 63) uchisotoZone = '우치(가족)';
   else if (distFromCenter < 105) uchisotoZone = '우치(친구)';
-  else if (distFromCenter < 148.5) uchisotoZone = '소토(지인/동료)';
+  else if (distFromCenter < 149) uchisotoZone = '소토(지인/동료)';
 
   const systemPrompt = window.buildSystemPrompt({
     personaData: personaData,
@@ -837,7 +905,11 @@ async function startRecording() {
 
 function scrollToBottom() {
   const msgs = document.getElementById('chat-messages');
-  if(msgs) setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 100);
+  if (msgs) {
+    setTimeout(() => {
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 100);
+  }
 }
 
 // Enter key for text input

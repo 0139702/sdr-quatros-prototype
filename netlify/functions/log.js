@@ -2,6 +2,15 @@
 // 실험 데이터를 Supabase에 저장하는 함수
 // API 키가 서버에만 존재
 
+function getKSTISOString() {
+  // 현재 시각을 아시아/서울 타임존 기준의 ISO 포맷으로 변환
+  const now = new Date();
+  const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로 변환
+  const kstDate = new Date(now.getTime() + kstOffset);
+  
+  return kstDate.toISOString().replace('Z', '');
+}
+
 exports.handler = async (event) => {
   const allowedOrigins = [
     'https://sdr-learnlanguage.netlify.app',
@@ -37,17 +46,21 @@ exports.handler = async (event) => {
     if (type === 'create_session') {
       endpoint = '/rest/v1/sessions';
       insertData = {
-        participant_id: data.participantId,         // 예: "P01"
-        experiment_day: data.experimentDay,             // 예: "2024-06-01"
-        condition: 'B',                   // 'A' | 'B'
-        learning_type: data.learningType,            // 'speaking' 등
-        slider_distance: data.sliderDistance,
-        slider_power: data.sliderPower,
-        slider_polite: data.sliderPolite,
-        uchisoto_x: data.uchisotoX,
-        uchisoto_y: data.uchisotoY,
-        ai_model: data.aiModel,                     // 'gemini' | 'openai'
-        started_at: new Date().toISOString(),
+        participant_id: data.participantId,    // Screen 0: P01 등
+        experiment_day: data.experimentDay,    // 예: 1, 2 등
+        condition: 'B',                        // 실험 조건
+        
+        learning_type: data.learningType,      // Screen 1: speaking, writing 등
+        scenario_type: data.scenarioType,      // Screen 1.5: 보고하기, 사과하기 등
+        partner_name: data.partnerName,        // Screen 3: 타나카 부장 등
+        
+        slider_distance: data.sliderDistance,  // Screen 2
+        slider_power: data.sliderPower,        // Screen 2
+        slider_polite: data.sliderPolite,      // Screen 2
+        uchisoto_x: data.uchisotoX,            // Screen 2
+        uchisoto_y: data.uchisotoY,            // Screen 2
+        ai_model: data.aiModel,                
+        started_at: getKSTISOString(),
       };
     }
 
@@ -63,7 +76,7 @@ exports.handler = async (event) => {
         response_time_ms: data.responseTimeMs,
         step_option_chosen: data.stepOptionChosen,  // Condition B 선택지 (없으면 null)
         feedback_level: data.feedbackLevel,         // 'correct'|'partial'|'wrong'|null
-        created_at: new Date().toISOString(),
+        created_at: getKSTISOString(),
       };
     }
 
@@ -76,7 +89,7 @@ exports.handler = async (event) => {
           'apikey': SUPABASE_SERVICE_KEY,
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
         },
-        body: JSON.stringify({ ended_at: new Date().toISOString() }),
+        body: JSON.stringify({ ended_at: getKSTISOString() }),
       });
       return {
         statusCode: res.ok ? 200 : 500,

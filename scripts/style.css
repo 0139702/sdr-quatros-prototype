@@ -1,5 +1,4 @@
 :root {
-  /* Figma 디자인 토큰 */
   --bg: #f8f9fa;
   --surface: #fcfcfc;
   --surface2: #f0f0f0;
@@ -90,13 +89,15 @@ body {
 
 /* Phone shell */
 .phone-shell {
-  width: 390px;
-  height: 844px;
-  background: var(--bg);
-  border-radius: 48px;
-  overflow: hidden;
+  width: 100%;
+  max-width: 430px; /* 대형 스마트폰 기준 */
+  height: 100vh;    /* 상하 꽉 채우기 */
+  height: -webkit-fill-available; /* iOS 사파리 하단 바 대응 */
+  display: flex;
+  flex-direction: column;
   position: relative;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+  background: #ffffff;
+  overflow: hidden;
 }
 
 /* Screens */
@@ -325,7 +326,7 @@ body {
   border-color: #04103A;
 }
 .scenario-icon-box {
-  width: 24px; height: 24px;
+  width: 20px; height: 20px;
   margin-bottom: 8px;
   
   /* 마스크 기본 설정 */
@@ -512,6 +513,7 @@ input[type=range]::-moz-range-thumb {
   width: 100%;
   aspect-ratio: 1;
   margin: 16px 0;
+  overflow: hidden;
 }
 .uchisoto-diagram svg {
   width: 100%;
@@ -523,6 +525,10 @@ input[type=range]::-moz-range-thumb {
   text-align: center;
   line-height: 1.5;
   opacity: 0.8;
+}
+#uchisoto-svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* Draggable person */
@@ -663,16 +669,58 @@ input[type=range]::-moz-range-thumb {
 }
 .btn-start:active { transform: translateX(-50%) scale(0.98); }
 
-/* SCREEN 4: 채팅 (Condition B) */
 #screen4 {
-  background: var(--bg);
+  display: none;
+  flex-direction: column;
+  background: #F8F9FA;
+  width: 100%;
+  position: relative;
+}
+#screen4.active { 
+  display: flex !important;
+  flex-direction: column;
+  height: 100vh;
+  height: -webkit-fill-available;
+  width: 100%;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #F8F9FA;
+}
+#screen .top-bar {
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+#screen4 #chat-messages {
+  flex: 1;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px 20px 220px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px; 
+  width: 100%;
+  max-width: 100%;
+}
+#screen4 .chat-input-area {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  padding: 16px 24px 40px;
+  background: white;
+  border-top: 1px solid var(--border);
+  z-index: 20;
+  box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.03);
 }
 .chat-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
   background: var(--bg);
-  padding: 52px 24px 12px;
+  padding: 20px 24px 12px;
   border-bottom: 1px solid var(--border);
 }
 .chat-header-top {
@@ -708,54 +756,145 @@ input[type=range]::-moz-range-thumb {
 .pill-gray { background: var(--surface2); color: var(--ink-muted); }
 
 .chat-messages {
-  flex: 1;
-  padding: 20px 24px;
+  flex: 1;                  /* 입력창을 제외한 나머지 공간을 꽉 채움 */
+  overflow-y: auto;         /* 내용이 많아지면 스크롤 생성 */
+  -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
+  padding: 12px 16px;
+  padding-top: 70px;        /* 상단 바 높이만큼 확보 */
+  padding-bottom: 160px;     /* 하단 입력 폼에 가려지지 않게 여백 대폭 확보 */
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-  padding-bottom: 200px;
+  gap: 12px;
+  max-width: 80%;
+
+  font-size: 15px;
+  line-height: 1.5;
+  position: relative;
+  margin-bottom: 4px;
+  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.06));
+  display: block;
+  word-break: break-word;
+}
+.chat-message.buddy {
+  align-self: flex-start;
+  background-color: #E8EEFF; /* 부드러운 우치/소토 테마 블루 그레이 */
+  color: #1B264F; /* var(--ink) */
+  border-radius: 2px 16px 16px 16px; /* 왼쪽 위만 뾰족하게 */
+  margin-left: 8px;
+}
+
+/* 상대방 말풍선 꼬리 */
+.chat-message.buddy::after {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-top: 0px solid transparent;
+  border-right: 8px solid #E8EEFF;
+  border-bottom: 10px solid transparent;
+}
+.chat-message.user {
+  align-self: flex-end;
+  background-color: #006A67; /* var(--accent) */
+  color: #FFFFFF;
+  border-radius: 16px 2px 16px 16px; /* 오른쪽 위만 뾰족하게 */
+  margin-right: 8px;
+}
+
+/* 내 말풍선 꼬리 */
+.chat-message.user::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-top: 0px solid transparent;
+  border-left: 8px solid #006A67;
+  border-bottom: 10px solid transparent;
 }
 
 /* Chat bubbles */
 .msg-row {
   display: flex;
   gap: 10px;
-  align-items: flex-end;
+  align-items: flex-start;
+  width: 100%;
 }
-.msg-row.user { flex-direction: row-reverse; }
+.msg-row.user {
+  justify-content: flex-end;
+}
 
 .msg-avatar {
-  width: 28px; height: 28px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--ink);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px;
-  color: white;
+  overflow: hidden;
   flex-shrink: 0;
+}
+.msg-avatar + div {
+  flex: 1; /* 나머지 공간을 단단하게 채움 */
+  display: flex;
+  flex-direction: column;
+}
+.chat-message ruby {
+  ruby-position: over;
+  ruby-align: center;
+}
+.chat-message rt {
+  font-size: 10px;
+  font-weight: normal;
+  opacity: 0.85;
+  padding-bottom: 2px;
+}
+
+/* 💡 힌트/피드백 박스 스타일 정돈 */
+.feedback-box {
+  background-color: #FFFBEA;
+  border-left: 4px solid #FFC107;
+  color: #7A6000;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 8px;
+  line-height: 1.6;
 }
 
 .bubble {
-  max-width: 72%;
+  max-width: 260px; /* 말풍선 최대 가로폭 굳히기 */
   padding: 12px 16px;
-  border-radius: 18px;
-  font-size: 14px;
+  font-size: 14.5px;
   line-height: 1.6;
+  position: relative;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
+  font-family: 'Pretendard', sans-serif;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 .bubble.ai {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-bottom-left-radius: 4px;
-  color: var(--ink);
+  background: white !important;
+  border: 1px solid #E2E8F0 !important;
+  color: var(--ink) !important;
+  border-radius: 2px 16px 16px 16px !important; /* 메신저 꼬리 느낌 */
 }
 .bubble.user-msg {
-  background: var(--ink);
-  color: white;
-  border-bottom-right-radius: 4px;
+  background: #006A67 !important; /* 디자인 토큰 --accent */
+  color: white !important;
+  border: none !important;
+  border-radius: 16px 2px 16px 16px !important; /* 메신저 꼬리 느낌 */
+}
+.bubble.user-msg rt {
+  color: #95EFEA !important; /* 내가 보낸 말풍선 내부의 rt는 청록색으로 가독성 변경 */
 }
 .bubble-jp {
   font-family: 'Noto Sans JP', sans-serif;
-  margin-bottom: 4px;
+  line-height: 1.9; /* 루비 태그가 들어갈 공간을 위해 자간 확보 */
+}
+.bubble-jp ruby {
+  display: inline-flex; /* 줄바꿈 시에도 구조 유지 */
+  margin-right: 2px;
 }
 .bubble-ko {
   font-size: 12px;
@@ -810,13 +949,28 @@ input[type=range]::-moz-range-thumb {
   color: var(--ink-muted);
   font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
 }
+#screen4 .step-option .option-check {
+  display: none !important;
+}
 .step-option:active, .step-option.chosen {
   background: var(--accent2-soft);
   border-color: var(--accent2);
 }
-.step-option.chosen .option-check {
-  color: var(--accent2);
-  font-weight: 700;
+#screen4 .step-option.chosen .option-check {
+  display: inline-block !important;
+}
+#screen4 .step-option .option-sub {
+  display: none;
+}
+#screen4 .step-option.chosen .option-sub {
+  display: block !important;
+  animation: fadeUp 0.2s ease forwards;
+}
+
+/* 옵션이 클릭되어 .chosen 클래스가 결합되었을 때만 기호와 부연 설명을 일제히 노출 */
+#screen4 .step-option.chosen .option-sub {
+  display: block !important;
+  animation: fadeUp 0.2s ease forwards;
 }
 
 /* Feedback badge */
@@ -1018,18 +1172,7 @@ input[type=range]::-moz-range-thumb {
   margin-top: 6px;
 }
 
-#screen4 {
-  overflow: hidden; /* 전체 화면 스크롤 방지 */
-}
-.chat-messages {
-  flex: 1;
-  overflow-y: auto; /* 말풍선 영역만 독립적으로 스크롤되도록 설정 */
-  padding: 20px 24px 180px 24px; /* 하단 입력창을 가리지 않도록 넉넉한 여백 */
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: 100%;
-}
+
 
 /* 2. STT 마이크 버튼 본래 스타일 및 애니메이션 복구 */
 .stt-pill-btn {
@@ -1060,10 +1203,15 @@ input[type=range]::-moz-range-thumb {
 
 /* 3. 한자 '아래에' 후리가나(루비)를 표시하기 위한 스타일 */
 ruby {
-  ruby-position: under; /* 후리가나를 글자 아래로 배치 */
+  ruby-position: under !important; /* 요청하신 규칙에 맞춰 글자 아래 배치 고정 */
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: top;
+  margin-right: 2px;
 }
 rt {
-  font-size: 0.65em;
-  color: var(--accent2); /* 살짝 파란빛으로 강조 */
-  font-weight: 600;
+  font-size: 10px !important;
+  line-height: 1.1 !important;
+  color: var(--accent2) !important; /* 자식 rt 색상 고정 */
+  margin-top: 2px;
 }

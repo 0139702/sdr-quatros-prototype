@@ -32,13 +32,22 @@ export async function sendChat(messages, systemPrompt) {
  * 세션 시작 — 슬라이더/우치소토 설정 저장
  * @returns {Promise<string>} sessionId
  */
+// scripts/api.js 내부 createSession 함수 교체
 export async function createSession(params) {
   const res = await fetch(`${API_BASE}/log`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'create_session', data: params }),
   });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('createSession 서버 에러:', res.status, err);
+    throw new Error(`세션 생성 실패: ${res.status} - ${err}`);
+  }
+
   const result = await res.json();
+  console.log('createSession 성공 결과:', result); 
   return result.data?.[0]?.id;
 }
 
