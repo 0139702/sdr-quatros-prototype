@@ -292,15 +292,21 @@
   </div>
 
   <div class="screen" id="screen4" style="background:#F8F9FA; display: none;">
-    <div class="top-bar">
-      <button class="nav-close" onclick="closeChatSession()" style="margin:0;">
+    <div class="top-bar" style="display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 56px; position: relative;">
+      
+      <button class="nav-close" onclick="closeChatSession()" style="margin: 0; padding: 0; background: none; border: none; width: 40px; display: flex; justify-content: flex-start; z-index: 10;">
         <img src="./components/xBtn.svg" alt="close">
       </button>
-      <span style="font-weight:700; color:var(--ink); font-family:'Pretendard', sans-serif;">비즈니스 경어</span>
+      
+      <span style="position: absolute; left: 50%; transform: translateX(-50%); font-weight: 700; color: var(--ink); font-family: 'Pretendard', sans-serif; font-size: 16px; pointer-events: none;">
+        비즈니스 경어
+      </span>
     
-      <div class="chat-avatar" style="width:30px; height:30px; border-radius:50%; overflow:hidden;">
+      <div style="width: 40px;"></div>
+    
+      <!-- <div class="chat-avatar" style="width:30px; height:30px; border-radius:50%; overflow:hidden;">
         <img src="./components/screen3/humanImg.svg" alt="profile" style="width:50%; height:50%; object-fit:cover;">
-      </div>
+      </div> -->
     </div>
     
     <div class="chat-messages" id="chat-messages">
@@ -727,7 +733,7 @@ function addAIMessageFull(jpText, hint, isError = false) {
   const row = document.createElement('div');
   row.className = 'msg-row';
   
-  const hintHtml = (hint && isError) ? `
+  const hintHtml = hint ? `
     <div class="feedback-box">
       💡 ${hint}
     </div>` : '';
