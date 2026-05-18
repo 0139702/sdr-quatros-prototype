@@ -834,8 +834,8 @@ async function sendMessage(inputMethod = 'text') {
     typingRow.remove();
     conversationHistory.push({ role: 'assistant', content: reply });
 
-    const hintMatch = reply.match(/💡\s*\[힌트:([^\]]+)\]/);
-    const jpText = reply.replace(/💡\s*\[[^\]]+\]/, '').trim();
+    const hintMatch = reply.match(/💡\s*\[?힌트:\s*([^\]\n]+)\]?/);
+    const jpText = reply.replace(/💡\s*\[?힌트:\s*[^\]\n]+\]?/, '').trim();
     const hint = hintMatch ? hintMatch[1].trim() : null;
 
     addAIMessageFull(jpText, hint);
