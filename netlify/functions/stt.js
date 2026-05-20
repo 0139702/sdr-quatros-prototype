@@ -51,10 +51,13 @@ exports.handler = async (event) => {
       `Content-Type: ${mimeType}\r\n\r\n`,
     ];
     const partsBuffer = Buffer.from(parts.join(''));
-    // 언어(language) 강제 할당 부분을 지워서 Whisper가 한국어/일본어를 자동 감지하게 만듭니다.
+    // 일본어 강제 고정으로 롤백
     const footer = Buffer.from(`\r\n--${boundary}\r\n` +
       `Content-Disposition: form-data; name="model"\r\n\r\n` +
       `whisper-1\r\n` +
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="language"\r\n\r\n` +
+      `ja\r\n` +
       `--${boundary}--\r\n`
     );
 
