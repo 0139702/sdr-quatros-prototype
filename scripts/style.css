@@ -839,10 +839,10 @@ input[type=range]::-moz-range-thumb {
   display: flex;
   flex-direction: column;
 }
-.chat-message ruby {
+/* .chat-message ruby {
   ruby-position: over;
   ruby-align: center;
-}
+} */
 .chat-message rt {
   font-size: 10px;
   font-weight: normal;
@@ -893,7 +893,7 @@ input[type=range]::-moz-range-thumb {
   line-height: 1.9; /* 루비 태그가 들어갈 공간을 위해 자간 확보 */
 }
 .bubble-jp ruby {
-  display: inline-flex; /* 줄바꿈 시에도 구조 유지 */
+  /* display: inline-flex; 줄바꿈 시에도 구조 유지 */
   margin-right: 2px;
 }
 .bubble-ko {
@@ -1204,14 +1204,15 @@ input[type=range]::-moz-range-thumb {
 /* 3. 한자 '아래에' 후리가나(루비)를 표시하기 위한 스타일 */
 ruby {
   ruby-position: under !important; /* 요청하신 규칙에 맞춰 글자 아래 배치 고정 */
-  display: inline-flex;
-  flex-direction: column;
-  vertical-align: top;
+  /* display: inline-flex; */
+  /* flex-direction: column; */
+  /* vertical-align: top; */
   margin-right: 2px;
+  ruby-align: center !important; /* 루비 텍스트 중앙 정렬 */
 }
 rt {
   font-size: 10px !important;
-  line-height: 1.1 !important;
+  line-height: normal !important;
   color: var(--accent2) !important; /* 자식 rt 색상 고정 */
   margin-top: 2px;
 }
